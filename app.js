@@ -38,7 +38,7 @@ const convertPlayerToResponseObject = (objectItem) => {
 Express.post("/register/", async (request, response) => {
   const { username, password, name, gender } = request.body;
   const hashedPassword = await bcrypt.hash(password, 10);
-  const userDetailsQuery = `SELECT * FROM user WHERE username = ${username}`;
+  const userDetailsQuery = `SELECT * FROM user WHERE username = '${username}'`;
   const dbUser = await db.all(userDetailsQuery);
   if (password.length < 6) {
     response.status(400);
@@ -68,7 +68,7 @@ Express.post("/register/", async (request, response) => {
 
 Express.post("/login/", async (request, response) => {
   const { username, password } = request.body;
-  const selectUserQuery = `SELECT * FROM user WHERE username = ${username}`;
+  const selectUserQuery = `SELECT * FROM user WHERE username = '${username}'`;
   const dbUser = await db.all(selectUserQuery);
   if (dbUser === undefined) {
     response.status(400);
@@ -78,7 +78,7 @@ Express.post("/login/", async (request, response) => {
     let payload = { username: username };
     const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
     if (isPasswordMatched === true) {
-      jwtToken = jwt.sign(payload, "gmadhu9381");
+      jwtToken = jwt.sign(payload, "My_Access_Token");
       response.send({ jwtToken });
     } else {
       response.status(400);
@@ -86,3 +86,5 @@ Express.post("/login/", async (request, response) => {
     }
   }
 });
+
+module.exports = Express;
