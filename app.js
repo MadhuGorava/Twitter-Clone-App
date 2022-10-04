@@ -35,6 +35,28 @@ const convertPlayerToResponseObject = (objectItem) => {
   return {};
 };
 
+const authenticateToken = (request, response, next) => {
+  let jwtToken;
+  const authHeader = request.headers["authorization"];
+  if (authHeader !== undefined) {
+    jwtToken = authHeader.split(" ")[1];
+  }
+  if (jwtToken === undefined) {
+    response.status(401);
+    response.send("Invalid JWT Token");
+  } else {
+    jwt.verify(jwtToken, "MY_SECRET_TOKEN", async (error, payload) => {
+      if (error) {
+        response.status(401);
+        response.send("Invalid JWT Token");
+      } else {
+        request.username = payload.username;
+        next();
+      }
+    });
+  }
+};
+
 Express.post("/register/", async (request, response) => {
   const { username, password, name, gender } = request.body;
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -69,7 +91,7 @@ Express.post("/register/", async (request, response) => {
 Express.post("/login/", async (request, response) => {
   const { username, password } = request.body;
   const selectUserQuery = `SELECT * FROM user WHERE username = '${username}'`;
-  const dbUser = await db.all(selectUserQuery);
+  const dbUser = await db.get(selectUserQuery);
   if (dbUser === undefined) {
     response.status(400);
     response.send("Invalid user");
@@ -86,5 +108,16 @@ Express.post("/login/", async (request, response) => {
     }
   }
 });
+
+Express.get(
+  "/user/tweets/feed/",
+  authenticateToken,
+  async (request, response) => {
+    const { username } = request.params;
+    const selectedQuery = `SELECT username, tweet, date_time AS dateTime FROM user INNER JOIN tweet ON user.user_id = tweet.user_id WHERE username = ${username}`;
+    const tweets = await db.get(selectedQuery);
+    response.send(tweets);
+  }
+);
 
 module.exports = Express;

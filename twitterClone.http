@@ -17,3 +17,15 @@ Content-Type: application/json
   "username":"JoeBiden",
   "password":"biden@123"
 }
+
+###
+GET http://localhost:3000/user/tweets/feed/
+
+[
+   {
+      username: "SrBachchan",
+      tweet: "T 3859 - do something wonderful, people may imitate it ..",
+      dateTime: "2021-04-07 14:50:19"
+   },
+   ...
+ ]
